@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sangam App</title>
+    <title>Personal Chat App with Friend System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -422,18 +422,129 @@
             background: #ccc;
         }
         
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #eee;
-                max-height: 300px;
-            }
-        }
+       /* Already existing @media ke niche ye add karo */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        height: auto;
+        max-height: 100vh;
+    }
+
+    .header {
+        padding: 15px;
+        text-align: center;
+        font-size: 18px;
+    }
+
+    .user-status {
+        position: static;
+        margin-top: 10px;
+        justify-content: center;
+    }
+
+    .content {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .chat-container {
+        flex: 1;
+        width: 100%;
+        height: calc(100vh - 350px);
+    }
+
+    .chat-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .chat-messages {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .message {
+        max-width: 85%;
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .chat-input {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .chat-input input {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .chat-input button {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    /* Auth forms */
+    .auth-container {
+        width: 100%;
+        max-width: 95%;
+        padding: 20px;
+    }
+
+    .auth-tab {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .form-group input {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-title {
+        font-size: 20px;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+
+    .user-avatar-sm {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .sidebar-tabs {
+        flex-direction: column;
+    }
+
+    .sidebar-tab {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
     </style>
 </head>
 <body>
@@ -478,7 +589,7 @@
     <!-- Main App Container -->
     <div id="appContainer" class="container hidden">
         <div class="header">
-            <h1 class="app-title">Sangam Chat</h1>
+            <h1 class="app-title">Personal Chat App</h1>
             <div class="user-status">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <span id="userName">User</span>
