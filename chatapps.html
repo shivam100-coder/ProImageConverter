@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sangam Chat</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:0; }
+    .container { max-width:400px; margin:50px auto; background:#fff; padding:20px;
+                 border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    h2 { text-align:center; margin-bottom:20px; }
+    input { width:100%; padding:10px; margin:10px -10px; border:1px solid #ccc; border-radius:8px; }
+    button { width:100%; padding:10px; background:#4CAF50; color:#fff; font-size:16px;
+             border:none; border-radius:8px; cursor:pointer; }
+    button:hover { background:#45a049; }
+    .toggle { text-align:center; margin-top:15px; cursor:pointer; color:#007bff; }
+    #dashboard { display:none; }
+    #chat-box { max-width:600px; margin:20px auto; background:#fff; padding:20px;
+                border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    #messages { height:300px; overflow-y:auto; border:1px solid #ddd; padding:10px; margin-bottom:10px; border-radius:8px; background:#fafafa; }
+    .msg { margin:5px 0; padding:8px 12px; border-radius:12px; max-width:70%; }
+    .me { background:#DCF8C6; align-self:flex-end; }
+    .other { background:#eee; }
+    .msg-container { display:flex; flex-direction:column; }
+  </style>
+</head>
+<body>
+
+<!-- Auth Section -->
+<div id="auth-section" class="container">
+  <h2 id="form-title">Login to Sangam Chat</h2>
+
+  <!-- Login Form -->
+  <div id="login-form">
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div class="toggle" onclick="showSignup()">Don't have an account? Sign Up</div>
+  </div>
+
+  <!-- Signup Form -->
+  <div id="signup-form" style="display:none;">
+    <input type="text" id="signup-username" placeholder="Username">
+    <input type="email" id="signup-email" placeholder="Email">
+    <input type="password" id="signup-password" placeholder="Password">
+    <button onclick="signup()">Create Account</button>
+    <div class="toggle" onclick="showLogin()">Already have an account? Login</div>
+  </div>
+</div>
+
+<!-- Dashboard + Chat -->
+<div id="dashboard">
+  <div class="container">
+    <h2>Welcome to Sangam Chat (Made by Shivam Soni) 🎉</h2>
+    <p id="welcome"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div id="chat-box">
+    <h3>💬 Global Chat</h3>
+    <div id="messages" class="msg-container"></div>
+    <input type="text" id="message-input" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  // TODO: apna Firebase config yaha daalo
+  const firebaseConfig = {
+  apiKey: "AIzaSyBgBLHaDzznMejADm5fYVGf5OWitYdgrKk",
+  authDomain: "sangam-29b02.firebaseapp.com",
+  databaseURL: "https://sangam-29b02-default-rtdb.firebaseio.com",
+  projectId: "sangam-29b02",
+  storageBucket: "sangam-29b02.firebasestorage.app",
+  messagingSenderId: "568571041381",
+  appId: "1:568571041381:web:00a0b5b26127435dde188c"
+};
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  let currentUser = null;
+
+  // Show login / signup toggle
+  function showSignup() {
+    document.getElementById("login-form").style.display = "none";
+    document.getElementById("signup-form").style.display = "block";
+    document.getElementById("form-title").innerText = "Create Account";
+  }
+
+  function showLogin() {
+    document.getElementById("signup-form").style.display = "none";
+    document.getElementById("login-form").style.display = "block";
+    document.getElementById("form-title").innerText = "Login to Rabta";
+  }
+
+  // Signup
+  function signup() {
+    const username = document.getElementById("signup-username").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+
+    if (!username) { alert("Please enter a username!"); return; }
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((cred) => {
+        db.ref("users/" + cred.user.uid).set({
+          username: username,
+          email: email
+        });
+        alert("✅ Account created successfully! Please login.");
+        showLogin();
+      })
+      .catch((error) => {
+        alert("❌ " + error.message);
+      });
+  }
+
+  // Login
+  function login() {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then((cred) => {
+        currentUser = cred.user;
+        db.ref("users/" + currentUser.uid).once("value").then(snapshot => {
+          const username = snapshot.val().username;
+          document.getElementById("welcome").innerText = "Logged in as: " + username;
+        });
+
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+
+        loadMessages();
+      })
+      .catch((error) => {
+        alert("❌ " + error.message);
+      });
+  }
+
+  // Logout
+  function logout() {
+    auth.signOut().then(() => {
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("auth-section").style.display = "block";
+      showLogin();
+    });
+  }
+
+  // Send message
+  function sendMessage() {
+    const msg = document.getElementById("message-input").value;
+    if (!msg.trim()) return;
+
+    db.ref("users/" + currentUser.uid).once("value").then(snapshot => {
+      const username = snapshot.val().username;
+      const messageData = {
+        sender: username,
+        text: msg,
+        timestamp: Date.now()
+      };
+      db.ref("messages").push(messageData);
+      document.getElementById("message-input").value = "";
+    });
+  }
+
+  // Load messages realtime
+  function loadMessages() {
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML = "";
+
+    db.ref("messages").on("child_added", (snapshot) => {
+      const msg = snapshot.val();
+      const div = document.createElement("div");
+      div.classList.add("msg");
+
+      if (msg.sender === document.getElementById("welcome").innerText.replace("Logged in as: ","")) {
+        div.classList.add("me");
+      } else {
+        div.classList.add("other");
+      }
+
+      div.innerText = msg.sender + ": " + msg.text;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  }
+</script>
+
+</body>
+</html>
